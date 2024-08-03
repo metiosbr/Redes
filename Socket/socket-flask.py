@@ -4,55 +4,55 @@ import random
 from string import ascii_uppercase
 
 app = Flask(__name__)
-app.config["SECRET_KEY"] = "faeaggd"
+app.config["SECRET_KEY"] = "hjhjsdahhds"
 socketio = SocketIO(app)
 
 rooms = {}
 
-def criar_sala(length):
+def generate_unique_code(length):
     while True:
         code = ""
         for _ in range(length):
             code += random.choice(ascii_uppercase)
-            
+        
         if code not in rooms:
             break
-        
+    
     return code
 
 @app.route("/", methods=["POST", "GET"])
-def principal():
+def home():
     session.clear()
     if request.method == "POST":
         name = request.form.get("name")
         code = request.form.get("code")
         join = request.form.get("join", False)
         create = request.form.get("create", False)
-        
+
         if not name:
-            return render_template("index.html", error="Insira um nome.", code=code, name=name)
-        
+            return render_template("home.html", error="Digite um nome.", code=code, name=name)
+
         if join != False and not code:
-            return render_template("index.html", error="Entre em um chat.", code=code, name=name)
+            return render_template("home.html", error="Digite um código válido.", code=code, name=name)
         
         room = code
         if create != False:
-            room = criar_sala(4)
-            rooms[room] = {"members":0, "messages":[]}
+            room = generate_unique_code(4)
+            rooms[room] = {"members": 0, "messages": []}
         elif code not in rooms:
-            return render_template("index.html", error="A sala não existe.", code=code, name=name)
+            return render_template("home.html", error="A sala não existe.", code=code, name=name)
         
         session["room"] = room
         session["name"] = name
-        return redirect(url_for("sala"))
-            
-    return render_template("index.html")
+        return redirect(url_for("room"))
 
-@app.route("/sala")
-def sala():
+    return render_template("home.html")
+
+@app.route("/room")
+def room():
     room = session.get("room")
     if room is None or session.get("name") is None or room not in rooms:
-        return redirect(url_for("principal"))
+        return redirect(url_for("home"))
 
     return render_template("room.html", code=room, messages=rooms[room]["messages"])
 
@@ -60,11 +60,11 @@ def sala():
 def message(data):
     room = session.get("room")
     if room not in rooms:
-        return
+        return 
     
     content = {
         "name": session.get("name"),
-        "message" : data["data"]    
+        "message": data["data"]
     }
     send(content, to=room)
     rooms[room]["messages"].append(content)
@@ -84,21 +84,20 @@ def connect(auth):
     send({"name": name, "message": "entrou no chat"}, to=room)
     rooms[room]["members"] += 1
     print(f"{name} entrou na sala {room}")
-    
+
 @socketio.on("disconnect")
 def disconnect():
     room = session.get("room")
     name = session.get("name")
     leave_room(room)
-    
+
     if room in rooms:
         rooms[room]["members"] -= 1
         if rooms[room]["members"] <= 0:
             del rooms[room]
-
+    
     send({"name": name, "message": "saiu do chat"}, to=room)
-    print(f"{name} saiu da sala")
+    print(f"{name} saiu da sala {room}")
 
 if __name__ == "__main__":
-    socketio.run(app, debug=True)
-    
+    socketio.run(app, host='0.0.0.0', debug=True)

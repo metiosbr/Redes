@@ -1,0 +1,40 @@
+{% extends 'base.html' %} {% block content %}
+<style>
+  background-color: black;
+</style>
+<form method="post" class="buttons">
+  <h3>Chat</h3>
+  <div>
+    <input
+      type="text"
+      placeholder="Nome"
+      name="name"
+      value="{{name}}"
+    />
+  </div>
+  <div>
+    <input
+      type="text"
+      placeholder="Email"
+      name="name"
+    />
+  </div>
+  <div>
+    <input
+      type="text"
+      placeholder="Local"
+      name="name"
+    />
+  </div>
+  <div class="join">
+    <input type="text" placeholder="Código da sala" name="code" value="{{code}}" />
+    <button type="submit" name="join">Entrar na sala</button>
+  </div>
+  <button type="submit" name="create" class="create-btn">Criar sala</button>
+  {% if error %}
+  <ul>
+    <li>{{error}}</li>
+  </ul>
+  {% endif %}
+</form>
+{% endblock %}

@@ -1,62 +1,52 @@
-<!DOCTYPE html>
-<html lang="pt-br">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <link rel="stylesheet" href="/static/style.css">
-    <title>Sala de Chat</title>
-</head>
-<body>
-    <div class="message-box">
-      <h2>Chat - {{code}}</h2>
-      <div class="messages" id="messages"></div>
-      <div class="inputs">
-        <input
-        type="text"
-        rows="3"
-        placeholder="Mensagem"
-        name="message"
-        id="message"
-      />
-      <button type="button" name="send" id="send-btn" onClick="sendMessage()">
-        Enviar
-      </button>
-    </div>
+{% extends 'base.html' %} {% block content %}
+<div class="message-box">
+  <h2>Chat Room: {{code}}</h2>
+  <div class="messages" id="messages"></div>
+  <div class="inputs">
+    <input
+      type="text"
+      rows="3"
+      placeholder="Mensagem"
+      name="message"
+      id="message"
+    />
+    <button type="button" name="send" id="send-btn" onClick="sendMessage()">
+      Enviar
+    </button>
   </div>
-  <script type="text/javascript">
-    var socketio = io();
+</div>
+<script type="text/javascript">
+  var socketio = io();
 
-    const messages = document.getElementById("messages");
+  const messages = document.getElementById("messages");
 
-    const createMessage = (name, msg) => {
-      const content = `
-      <div class="text">
-          <span>
+  const createMessage = (name, msg) => {
+    const content = `
+    <div class="text">
+        <span>
             <strong>${name}</strong>: ${msg}
         </span>
         <span class="muted">
             ${new Date().toLocaleString()}
         </span>
     </div>
-      `;
+    `;
     messages.innerHTML += content;
-    };
+  };
 
-    socketio.on("message", (data) => {
-      createMessage(data.name, data.message);
-    });
+  socketio.on("message", (data) => {
+    createMessage(data.name, data.message);
+  });
 
-    const sendMessage = () => {
-      const message = document.getElementById("message");
-      if (message.value == "") return;
-      socketio.emit("message", { data: message.value });
-      message.value = "";
-    };
-  </script>
-  {% for msg in messages %}
-  <script type="text/javascript">
-    createMessage("{{msg.name}}", "{{msg.message}}");
-  </script>
-  {% endfor %} {% endblock %}
-</body>
-</html>
+  const sendMessage = () => {
+    const message = document.getElementById("message");
+    if (message.value == "") return;
+    socketio.emit("message", { data: message.value });
+    message.value = "";
+  };
+</script>
+{% for msg in messages %}
+<script type="text/javascript">
+  createMessage("{{msg.name}}", "{{msg.message}}");
+</script>
+{% endfor %} {% endblock %}
